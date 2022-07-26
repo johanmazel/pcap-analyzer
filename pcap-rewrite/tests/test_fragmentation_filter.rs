@@ -1,32 +1,10 @@
-use pcap_parser::{Capture, PcapCapture};
 use std::env;
 use std::fs;
-use std::fs::File;
-use std::path::Path;
 use std::path::PathBuf;
 
 use assert_cmd::Command;
 
-fn count_packet_in_trace(trace_file_path: &Path) -> u32 {
-    if trace_file_path.exists() {
-        let file = File::open(trace_file_path).unwrap();
-        let file_size = file.metadata().unwrap().len();
-        if file_size == 0 {
-            0
-        } else {
-            let data = fs::read(trace_file_path).unwrap();
-            let cap = PcapCapture::from_file(&data).unwrap();
-            let mut count = 0;
-            let mut iter = cap.iter();
-            while iter.next().is_some() {
-                count += 1;
-            }
-            count
-        }
-    } else {
-        panic!("{:#?} does not exists!", trace_file_path)
-    }
-}
+mod test_common;
 
 fn generic_test(
     trace_input_file_s: &str,
@@ -53,7 +31,7 @@ fn generic_test(
     let _output = cmd.output().unwrap();
     // println!("Output: {:?}", _output);
 
-    let output_nb_packet = count_packet_in_trace(&trace_output_file_path);
+    let output_nb_packet = test_common::count_packet_in_trace(&trace_output_file_path);
 
     fs::remove_file(&trace_output_file_path).expect("Could not destroy the filtered file");
 
